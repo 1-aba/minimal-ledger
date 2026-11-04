@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -68,12 +67,13 @@
             touch-action: manipulation;
         }
 
+        /* 底部留白：为 tab-bar + save-area 预留空间 */
         .app {
             width: 100%;
             max-width: 520px;
             min-height: 100dvh;
             margin: 0 auto;
-            padding-bottom: calc(82px + env(safe-area-inset-bottom));
+            padding-bottom: calc(180px + env(safe-area-inset-bottom));
         }
 
         .header {
@@ -211,15 +211,17 @@
             border-color: #adb5bd;
         }
 
+        /* 保存按钮：抬到 tab-bar 上方，避免被遮挡 */
         .save-area {
             position: fixed;
-            z-index: 10;
-            bottom: 0;
+            z-index: 15;
+            bottom: calc(74px + env(safe-area-inset-bottom));
             left: 0;
             right: 0;
-            padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+            padding: 12px 18px;
             background: rgba(248,249,250,.96);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         .save-inner {
@@ -362,7 +364,7 @@
 
         .transaction {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             padding: 13px 0;
             border-bottom: 1px solid var(--border);
@@ -375,6 +377,7 @@
 
         .transaction-info {
             min-width: 0;
+            flex: 1;
         }
 
         .transaction-name {
@@ -444,6 +447,7 @@
             background: white;
             text-align: left;
             font-size: 14px;
+            color: var(--text);
         }
 
         .setting-btn:first-child {
@@ -501,6 +505,7 @@
 
         .tab-icon {
             font-size: 21px;
+            line-height: 1;
         }
 
         .tab.active {
@@ -514,7 +519,7 @@
             position: fixed;
             z-index: 100;
             left: 50%;
-            bottom: calc(90px + env(safe-area-inset-bottom));
+            bottom: calc(180px + env(safe-area-inset-bottom));
             transform: translate(-50%, 15px);
             opacity: 0;
             pointer-events: none;
@@ -524,7 +529,8 @@
             border-radius: 30px;
             font-size: 13px;
             transition: .25s;
-            white-space: nowrap;
+            max-width: calc(100% - 40px);
+            text-align: center;
         }
 
         .toast.show {
@@ -542,6 +548,7 @@
             color: #674d00;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
         .update-banner button {
@@ -551,6 +558,80 @@
             border-radius: 8px;
             padding: 7px 12px;
             font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* 手动复制备份的弹层，用于极端兼容环境 */
+        .copy-modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .copy-modal.show {
+            display: flex;
+        }
+
+        .copy-modal-body {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .copy-modal-title {
+            font-weight: 750;
+            font-size: 15px;
+        }
+
+        .copy-modal-desc {
+            font-size: 12px;
+            color: var(--sub);
+        }
+
+        .copy-modal textarea {
+            width: 100%;
+            min-height: 160px;
+            max-height: 50vh;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            font-family: ui-monospace, Menlo, monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .copy-modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .copy-modal-actions button {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 650;
+        }
+
+        .copy-modal-actions .primary {
+            background: var(--expense);
+            color: white;
+        }
+
+        .copy-modal-actions .secondary {
+            background: #f1f3f5;
+            color: var(--text);
         }
 
         @media (min-width: 520px) {
@@ -580,13 +661,11 @@
 
     <div class="update-banner" id="updateBanner">
         <span>发现新版本，点击刷新</span>
-        <button id="updateBtn">立即更新</button>
+        <button id="updateBtn" type="button">立即更新</button>
     </div>
 
     <!-- 记账页面 -->
-
     <section class="page active" id="recordPage">
-
         <div class="card">
 
             <div class="type-switch">
@@ -631,18 +710,13 @@
 
             <div class="field">
                 <label for="dateInput">记账日期</label>
-                <input
-                    id="dateInput"
-                    type="date"
-                >
+                <input id="dateInput" type="date">
             </div>
 
         </div>
-
     </section>
 
     <!-- 月表页面 -->
-
     <section class="page" id="monthPage">
 
         <div class="month-nav">
@@ -652,22 +726,18 @@
         </div>
 
         <div class="card summary-card">
-
             <div class="summary-item">
                 <label>收入</label>
                 <strong class="income-text" id="monthIncome">¥0.00</strong>
             </div>
-
             <div class="summary-item">
                 <label>支出</label>
                 <strong class="expense-text" id="monthExpense">¥0.00</strong>
             </div>
-
             <div class="summary-item">
                 <label>结余</label>
                 <strong id="monthBalance">¥0.00</strong>
             </div>
-
         </div>
 
         <div class="day-list" id="dayList"></div>
@@ -675,11 +745,10 @@
         <div class="section-title">数据管理</div>
 
         <div class="card" style="padding:0;overflow:hidden">
-
             <button class="setting-btn" type="button" onclick="exportData()">
                 <div>
                     <div>导出 JSON 备份</div>
-                    <div class="setting-desc">将所有记账数据保存到手机</div>
+                    <div class="setting-desc">调起系统保存，将数据保存到手机</div>
                 </div>
                 <span>↓</span>
             </button>
@@ -699,7 +768,6 @@
                 </div>
                 <span>›</span>
             </button>
-
         </div>
 
         <input
@@ -712,13 +780,10 @@
         <div style="text-align:center;color:#adb5bd;font-size:11px;padding:20px 0">
             极简记账 · 数据仅保存在本地
         </div>
-
     </section>
-
 </div>
 
 <!-- 固定保存按钮 -->
-
 <div class="save-area" id="saveArea">
     <div class="save-inner">
         <button class="save-btn"
@@ -731,28 +796,42 @@
 </div>
 
 <!-- 底部导航 -->
-
 <nav class="tab-bar">
     <div class="tab-inner">
-
         <button class="tab active"
                 id="recordTab"
+                type="button"
                 onclick="switchPage('record')">
             <span class="tab-icon">＋</span>
             <span>记一笔</span>
         </button>
-
         <button class="tab"
                 id="monthTab"
+                type="button"
                 onclick="switchPage('month')">
             <span class="tab-icon">▤</span>
             <span>月表</span>
         </button>
-
     </div>
 </nav>
 
+<!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- 手动复制备份弹层（极端兼容） -->
+<div class="copy-modal" id="copyModal">
+    <div class="copy-modal-body">
+        <div class="copy-modal-title">手动复制备份</div>
+        <div class="copy-modal-desc">
+            当前环境不支持系统分享或自动下载，请复制下面 JSON 文本，粘贴到"备忘录"或"文件"应用中保存。
+        </div>
+        <textarea id="copyText" readonly></textarea>
+        <div class="copy-modal-actions">
+            <button type="button" class="secondary" onclick="closeCopyModal()">关闭</button>
+            <button type="button" class="primary" onclick="copyBackupText()">复制</button>
+        </div>
+    </div>
+</div>
 
 <script>
 "use strict";
@@ -784,17 +863,14 @@ const dateInput = document.getElementById("dateInput");
 
 function getLocalDate() {
     const d = new Date();
-
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
-
     return `${y}-${m}-${day}`;
 }
 
 function formatDate(date) {
     const d = new Date(date + "T00:00:00");
-
     const week = [
         "星期日",
         "星期一",
@@ -804,7 +880,6 @@ function formatDate(date) {
         "星期五",
         "星期六"
     ];
-
     return week[d.getDay()];
 }
 
@@ -838,6 +913,32 @@ function parseMoney(value) {
     return cents;
 }
 
+/**
+ * 使用本地时间校验日期字符串，避免 toISOString 的时区偏移。
+ */
+function isValidDateString(value) {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return false;
+    }
+
+    const parts = value.split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+
+    if (y < 1900 || y > 9999 || m < 1 || m > 12 || d < 1 || d > 31) {
+        return false;
+    }
+
+    const dt = new Date(y, m - 1, d);
+
+    return (
+        dt.getFullYear() === y &&
+        dt.getMonth() === m - 1 &&
+        dt.getDate() === d
+    );
+}
+
 /* ================================
    三、数据存储
 ================================ */
@@ -858,7 +959,6 @@ function loadData() {
         }
 
         transactions = data.filter(isValidTransaction);
-
     } catch (error) {
         console.error("数据读取失败：", error);
         transactions = [];
@@ -868,13 +968,8 @@ function loadData() {
 
 function saveData() {
     try {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(transactions)
-        );
-
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
         return true;
-
     } catch (error) {
         console.error("数据保存失败：", error);
         showToast("保存失败，可能是存储空间不足");
@@ -883,24 +978,13 @@ function saveData() {
 }
 
 function isValidTransaction(item) {
-    if (!item || typeof item !== "object") {
-        return false;
-    }
+    if (!item || typeof item !== "object") return false;
 
-    if (typeof item.id !== "string" || !item.id) {
-        return false;
-    }
+    if (typeof item.id !== "string" || !item.id) return false;
 
-    if (
-        item.type !== "expense" &&
-        item.type !== "income"
-    ) {
-        return false;
-    }
+    if (item.type !== "expense" && item.type !== "income") return false;
 
-    if (typeof item.name !== "string") {
-        return false;
-    }
+    if (typeof item.name !== "string") return false;
 
     if (
         !Number.isSafeInteger(item.amountCents) ||
@@ -909,19 +993,7 @@ function isValidTransaction(item) {
         return false;
     }
 
-    if (
-        typeof item.date !== "string" ||
-        !/^\d{4}-\d{2}-\d{2}$/.test(item.date)
-    ) {
-        return false;
-    }
-
-    const d = new Date(item.date + "T00:00:00");
-
-    if (
-        isNaN(d.getTime()) ||
-        d.toISOString().slice(0, 10) !== item.date
-    ) {
+    if (!isValidDateString(item.date)) {
         return false;
     }
 
@@ -932,15 +1004,10 @@ function isValidTransaction(item) {
 }
 
 function createId() {
-    if (
-        window.crypto &&
-        typeof window.crypto.randomUUID === "function"
-    ) {
+    if (window.crypto && typeof window.crypto.randomUUID === "function") {
         return window.crypto.randomUUID();
     }
-
-    return Date.now().toString(36) +
-        Math.random().toString(36).slice(2);
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
 /* ================================
@@ -949,19 +1016,14 @@ function createId() {
 
 function init() {
     dateInput.value = today;
-
-    document.getElementById("headerDate").textContent =
-        today;
+    document.getElementById("headerDate").textContent = today;
 
     loadData();
-
     renderMonth();
-
     updateTypeUI();
 
     amountInput.addEventListener("input", function () {
         let value = this.value.replace(/[^0-9.]/g, "");
-
         const firstDot = value.indexOf(".");
 
         if (firstDot !== -1) {
@@ -970,11 +1032,9 @@ function init() {
                 value.substring(firstDot + 1).replace(/\./g, "");
 
             const parts = value.split(".");
-
             if (parts[1]) {
                 parts[1] = parts[1].slice(0, 2);
             }
-
             value = parts.join(".");
         }
 
@@ -986,6 +1046,12 @@ function init() {
 
     document.getElementById("updateBtn")
         .addEventListener("click", updateApp);
+
+    // 点击遮罩关闭复制弹层
+    document.getElementById("copyModal")
+        .addEventListener("click", function (e) {
+            if (e.target === this) closeCopyModal();
+        });
 }
 
 /* ================================
@@ -993,12 +1059,8 @@ function init() {
 ================================ */
 
 function setType(type) {
-    if (type !== "expense" && type !== "income") {
-        return;
-    }
-
+    if (type !== "expense" && type !== "income") return;
     currentType = type;
-
     updateTypeUI();
 }
 
@@ -1009,7 +1071,6 @@ function updateTypeUI() {
 
     expenseBtn.className = "type-btn";
     incomeBtn.className = "type-btn";
-
     saveBtn.classList.remove("income");
 
     if (currentType === "expense") {
@@ -1028,7 +1089,6 @@ function updateTypeUI() {
 
 function saveTransaction() {
     const amountCents = parseMoney(amountInput.value);
-
     const name = nameInput.value.trim();
     const date = dateInput.value;
 
@@ -1044,7 +1104,7 @@ function saveTransaction() {
         return;
     }
 
-    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!isValidDateString(date)) {
         showToast("请选择正确的日期");
         return;
     }
@@ -1068,10 +1128,7 @@ function saveTransaction() {
     amountInput.value = "";
     nameInput.value = "";
 
-    // 保留当前类型和日期，便于连续记账
-
     showToast("保存成功 ✓");
-
     renderMonth();
 }
 
@@ -1109,10 +1166,7 @@ function switchPage(page) {
 ================================ */
 
 function changeMonth(offset) {
-    currentMonth.setMonth(
-        currentMonth.getMonth() + offset
-    );
-
+    currentMonth.setMonth(currentMonth.getMonth() + offset);
     renderMonth();
 }
 
@@ -1150,9 +1204,7 @@ function renderMonth() {
         formatMoney(expense);
 
     const balanceEl = document.getElementById("monthBalance");
-
     balanceEl.textContent = formatMoney(balance);
-
     balanceEl.style.color =
         balance >= 0 ? "var(--income)" : "var(--expense)";
 
@@ -1165,7 +1217,6 @@ function renderMonth() {
 
 function renderDays(items) {
     const container = document.getElementById("dayList");
-
     container.innerHTML = "";
 
     if (items.length === 0) {
@@ -1176,17 +1227,12 @@ function renderDays(items) {
                 <p>点击底部「记一笔」<br>开始记录你的收支吧</p>
             </div>
         `;
-
         return;
     }
 
     const groups = {};
-
     items.forEach(item => {
-        if (!groups[item.date]) {
-            groups[item.date] = [];
-        }
-
+        if (!groups[item.date]) groups[item.date] = [];
         groups[item.date].push(item);
     });
 
@@ -1209,11 +1255,9 @@ function renderDays(items) {
         });
 
         const card = document.createElement("div");
-
         card.className = "day-card";
 
         const head = document.createElement("div");
-
         head.className = "day-head";
 
         const left = document.createElement("div");
@@ -1234,23 +1278,19 @@ function renderDays(items) {
 
         const expenseText = document.createElement("div");
         expenseText.className = "expense-text";
-        expenseText.textContent =
-            "支出 " + formatMoney(dayExpense);
+        expenseText.textContent = "支出 " + formatMoney(dayExpense);
 
         const incomeText = document.createElement("div");
         incomeText.className = "income-text";
-        incomeText.textContent =
-            "收入 " + formatMoney(dayIncome);
+        incomeText.textContent = "收入 " + formatMoney(dayIncome);
 
         right.append(expenseText, incomeText);
-
         head.append(left, right);
 
         const detail = document.createElement("div");
         detail.className = "day-detail";
 
         dayItems.sort((a, b) => b.createdAt - a.createdAt);
-
         dayItems.forEach(item => {
             detail.appendChild(createTransactionElement(item));
         });
@@ -1260,7 +1300,6 @@ function renderDays(items) {
         });
 
         card.append(head, detail);
-
         container.appendChild(card);
     });
 }
@@ -1282,7 +1321,6 @@ function createTransactionElement(item) {
 
     const time = document.createElement("div");
     time.className = "transaction-time";
-
     time.textContent =
         new Date(item.createdAt).toLocaleTimeString(
             "zh-CN",
@@ -1295,46 +1333,29 @@ function createTransactionElement(item) {
     right.className = "transaction-right";
 
     const amount = document.createElement("div");
-
     amount.className =
         "transaction-amount " +
         (item.type === "expense" ? "expense-text" : "income-text");
-
     amount.textContent =
         (item.type === "expense" ? "-" : "+") +
         formatMoney(item.amountCents);
 
     const editBtn = document.createElement("button");
-
+    editBtn.type = "button";
     editBtn.className = "edit-btn";
     editBtn.textContent = "编辑";
+    editBtn.addEventListener("click", () => editTransaction(item.id));
 
-    editBtn.addEventListener("click", () => {
-        editTransaction(item.id);
-    });
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "edit-btn danger";
+    delBtn.textContent = "删除";
+    delBtn.addEventListener("click", () => deleteTransaction(item.id));
 
-    right.append(amount, editBtn);
-
-    info.appendChild(createDeleteButton(item.id));
+    right.append(amount, editBtn, delBtn);
 
     row.append(info, right);
-
     return row;
-}
-
-function createDeleteButton(id) {
-    const btn = document.createElement("button");
-
-    btn.className = "edit-btn danger";
-    btn.textContent = "删除";
-
-    btn.style.marginTop = "8px";
-
-    btn.addEventListener("click", () => {
-        deleteTransaction(id);
-    });
-
-    return btn;
 }
 
 /* ================================
@@ -1342,14 +1363,10 @@ function createDeleteButton(id) {
 ================================ */
 
 function editTransaction(id) {
-    const item = transactions.find(
-        t => t.id === id
-    );
-
+    const item = transactions.find(t => t.id === id);
     if (!item) return;
 
     const newName = prompt("修改名称：", item.name);
-
     if (newName === null) return;
 
     if (!newName.trim()) {
@@ -1361,11 +1378,9 @@ function editTransaction(id) {
         "修改金额（元）：",
         (item.amountCents / 100).toFixed(2)
     );
-
     if (newAmount === null) return;
 
     const cents = parseMoney(newAmount);
-
     if (cents === null) {
         showToast("金额格式不正确");
         return;
@@ -1375,22 +1390,14 @@ function editTransaction(id) {
         "修改类型：输入 expense 或 income",
         item.type
     );
-
     if (newType === null) return;
 
-    if (
-        newType !== "expense" &&
-        newType !== "income"
-    ) {
+    if (newType !== "expense" && newType !== "income") {
         showToast("类型只能是 expense 或 income");
         return;
     }
 
-    const newDate = prompt(
-        "修改日期（YYYY-MM-DD）：",
-        item.date
-    );
-
+    const newDate = prompt("修改日期（YYYY-MM-DD）：", item.date);
     if (newDate === null) return;
 
     if (!isValidDateString(newDate)) {
@@ -1399,7 +1406,6 @@ function editTransaction(id) {
     }
 
     const oldItem = { ...item };
-
     item.name = newName.trim();
     item.amountCents = cents;
     item.type = newType;
@@ -1411,7 +1417,6 @@ function editTransaction(id) {
     }
 
     showToast("修改成功");
-
     renderMonth();
 }
 
@@ -1420,23 +1425,16 @@ function editTransaction(id) {
 ================================ */
 
 function deleteTransaction(id) {
-    const item = transactions.find(
-        t => t.id === id
-    );
-
+    const item = transactions.find(t => t.id === id);
     if (!item) return;
 
     const confirmed = confirm(
         `确定删除「${item.name}」这条记录吗？\n删除后无法直接恢复。`
     );
-
     if (!confirmed) return;
 
     const oldTransactions = transactions;
-
-    transactions = transactions.filter(
-        t => t.id !== id
-    );
+    transactions = transactions.filter(t => t.id !== id);
 
     if (!saveData()) {
         transactions = oldTransactions;
@@ -1444,64 +1442,128 @@ function deleteTransaction(id) {
     }
 
     showToast("删除成功");
-
     renderMonth();
-}
-
-function isValidDateString(value) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return false;
-    }
-
-    const d = new Date(value + "T00:00:00");
-
-    return (
-        !isNaN(d.getTime()) &&
-        d.toISOString().slice(0, 10) === value
-    );
 }
 
 /* ================================
    十四、导出 JSON
 ================================ */
 
-function exportData() {
-    const backup = {
-        app: "minimal-ledger",
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        transactions: transactions
-    };
+async function exportData() {
+    try {
+        const backup = {
+            app: "minimal-ledger",
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            transactions: transactions
+        };
 
-    const json = JSON.stringify(
-        backup,
-        null,
-        2
-    );
+        const json = JSON.stringify(backup, null, 2);
+        const fileName = `ledger-backup-${getLocalDate()}.json`;
+        const blob = new Blob([json], {
+            type: "application/json;charset=utf-8"
+        });
 
-    const blob = new Blob(
-        [json],
-        { type: "application/json;charset=utf-8" }
-    );
+        const ua = navigator.userAgent || "";
 
-    const url = URL.createObjectURL(blob);
+        // 微信 / QQ 内置浏览器：不支持系统分享文件，也不稳定支持 a.download
+        if (/MicroMessenger|QQ\//i.test(ua)) {
+            showToast("请点右上角在浏览器中打开后再导出");
+            return;
+        }
 
-    const a = document.createElement("a");
+        // 优先：Web Share（系统原生"存储到文件/相册"面板）
+        if (navigator.canShare && typeof File !== "undefined") {
+            try {
+                const file = new File([blob], fileName, {
+                    type: "application/json"
+                });
 
-    a.href = url;
+                if (navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: "极简记账备份",
+                        text: "记账数据备份"
+                    });
+                    showToast("已调起系统保存");
+                    return;
+                }
+            } catch (shareError) {
+                // 用户取消，直接结束
+                if (shareError && shareError.name === "AbortError") {
+                    return;
+                }
+                // 其他错误，继续尝试下载
+                console.warn("navigator.share 失败：", shareError);
+            }
+        }
 
-    a.download =
-        `ledger-backup-${getLocalDate()}.json`;
+        // 降级：传统下载
+        try {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            a.rel = "noopener";
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            showToast("备份已生成，请在下载列表查看");
+            return;
+        } catch (downloadError) {
+            console.warn("下载失败：", downloadError);
+        }
 
-    document.body.appendChild(a);
+        // 最后兜底：显示可复制的 JSON
+        openCopyModal(json);
 
-    a.click();
+    } catch (error) {
+        console.error("导出失败：", error);
+        showToast("导出失败：" + (error && error.message || "未知错误"));
+    }
+}
 
-    a.remove();
+function openCopyModal(text) {
+    document.getElementById("copyText").value = text;
+    document.getElementById("copyModal").classList.add("show");
+}
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+function closeCopyModal() {
+    document.getElementById("copyModal").classList.remove("show");
+}
 
-    showToast("备份文件已生成");
+async function copyBackupText() {
+    const textarea = document.getElementById("copyText");
+
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(textarea.value);
+            showToast("已复制到剪贴板");
+            closeCopyModal();
+            return;
+        }
+    } catch (error) {
+        console.warn("clipboard 失败：", error);
+    }
+
+    // 老浏览器兜底
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    try {
+        const ok = document.execCommand("copy");
+        if (ok) {
+            showToast("已复制到剪贴板");
+            closeCopyModal();
+            return;
+        }
+    } catch (error) {
+        console.warn("execCommand 失败：", error);
+    }
+
+    showToast("复制失败，请手动长按选中复制");
 }
 
 /* ================================
@@ -1514,7 +1576,6 @@ function triggerImport() {
 
 function importData(event) {
     const file = event.target.files[0];
-
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
@@ -1528,7 +1589,6 @@ function importData(event) {
     reader.onload = function () {
         try {
             const backup = JSON.parse(reader.result);
-
             let imported;
 
             if (Array.isArray(backup)) {
@@ -1549,12 +1609,10 @@ function importData(event) {
             }
 
             const ids = new Set();
-
             for (const item of imported) {
                 if (ids.has(item.id)) {
                     throw new Error("备份中存在重复记录 ID");
                 }
-
                 ids.add(item.id);
             }
 
@@ -1563,14 +1621,10 @@ function importData(event) {
                 "导入将替换当前全部记账数据，是否继续？\n" +
                 "建议先导出当前数据备份。"
             );
-
             if (!confirmed) return;
 
             const previous = transactions;
-
-            transactions = imported.map(item => ({
-                ...item
-            }));
+            transactions = imported.map(item => ({ ...item }));
 
             if (!saveData()) {
                 transactions = previous;
@@ -1578,13 +1632,11 @@ function importData(event) {
             }
 
             renderMonth();
-
             showToast("数据恢复成功");
 
         } catch (error) {
             console.error(error);
             showToast("导入失败：" + error.message);
-
         } finally {
             event.target.value = "";
         }
@@ -1603,11 +1655,9 @@ function importData(event) {
 ================================ */
 
 function showStorageInfo() {
-    const count = transactions.length;
-
     alert(
         "本地记账数据\n\n" +
-        "记录总数：" + count + " 条\n\n" +
+        "记录总数：" + transactions.length + " 条\n\n" +
         "存储位置：浏览器 localStorage\n" +
         "数据键名：" + STORAGE_KEY + "\n\n" +
         "注意：清理浏览器缓存或网站数据可能导致记录丢失，请定期导出 JSON 备份。"
@@ -1622,16 +1672,13 @@ let toastTimer = null;
 
 function showToast(message) {
     const toast = document.getElementById("toast");
-
     toast.textContent = message;
-
     toast.classList.add("show");
 
     clearTimeout(toastTimer);
-
     toastTimer = setTimeout(() => {
         toast.classList.remove("show");
-    }, 2000);
+    }, 2200);
 }
 
 /* ================================
@@ -1649,18 +1696,15 @@ async function registerServiceWorker() {
     }
 
     try {
-        const registration =
-            await navigator.serviceWorker.register("./sw.js", {
-                scope: "./"
-            });
+        const registration = await navigator.serviceWorker.register(
+            "./sw.js",
+            { scope: "./" }
+        );
 
         function showUpdate(worker) {
             if (!worker) return;
-
             waitingWorker = worker;
-
-            document.getElementById("updateBanner")
-                .style.display = "flex";
+            document.getElementById("updateBanner").style.display = "flex";
         }
 
         if (registration.waiting) {
@@ -1669,7 +1713,6 @@ async function registerServiceWorker() {
 
         registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
-
             if (!newWorker) return;
 
             newWorker.addEventListener("statechange", () => {
@@ -1684,9 +1727,7 @@ async function registerServiceWorker() {
 
         navigator.serviceWorker.addEventListener(
             "controllerchange",
-            () => {
-                window.location.reload();
-            }
+            () => window.location.reload()
         );
 
     } catch (error) {
@@ -1696,9 +1737,7 @@ async function registerServiceWorker() {
 
 function updateApp() {
     if (waitingWorker) {
-        waitingWorker.postMessage({
-            type: "SKIP_WAITING"
-        });
+        waitingWorker.postMessage({ type: "SKIP_WAITING" });
     }
 }
 
@@ -1707,9 +1746,7 @@ function updateApp() {
 ================================ */
 
 init();
-
 registerServiceWorker();
-
 </script>
 
 </body>
